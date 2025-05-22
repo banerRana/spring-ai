@@ -17,6 +17,7 @@
 package org.springframework.ai.chat.memory.repository.jdbc;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 
 /**
  * Abstraction for database-specific SQL for chat memory repository.
@@ -53,18 +54,23 @@ public interface JdbcChatMemoryRepositoryDialect {
 	 */
 	static JdbcChatMemoryRepositoryDialect from(DataSource dataSource) {
 		// Simple detection (could be improved)
-		try {
-			String url = dataSource.getConnection().getMetaData().getURL().toLowerCase();
-			if (url.contains("postgresql"))
+		try (Connection connection = dataSource.getConnection()) {
+			String url = connection.getMetaData().getURL().toLowerCase();
+			if (url.contains("postgresql")) {
 				return new PostgresChatMemoryRepositoryDialect();
-			if (url.contains("mysql"))
+			}
+			if (url.contains("mysql")) {
 				return new MysqlChatMemoryRepositoryDialect();
-			if (url.contains("mariadb"))
+			}
+			if (url.contains("mariadb")) {
 				return new MysqlChatMemoryRepositoryDialect();
-			if (url.contains("sqlserver"))
+			}
+			if (url.contains("sqlserver")) {
 				return new SqlServerChatMemoryRepositoryDialect();
-			if (url.contains("hsqldb"))
+			}
+			if (url.contains("hsqldb")) {
 				return new HsqldbChatMemoryRepositoryDialect();
+			}
 			// Add more as needed
 		}
 		catch (Exception ignored) {
